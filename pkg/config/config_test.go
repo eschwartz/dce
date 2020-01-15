@@ -330,7 +330,7 @@ func TestConfigBuilder_UnmarshalService(t *testing.T) {
 		tableName string
 	}
 	type services struct {
-		Foo     string `env:"FOO" envDefault:"bar"`
+		//Foo     string `env:"FOO" envDefault:"bar"`
 		Session *session
 		Db      *database
 	}
@@ -350,7 +350,7 @@ func TestConfigBuilder_UnmarshalService(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, svc)
 
-	require.Equal(t, "bar", svc.Foo)
+	//require.Equal(t, "bar", svc.Foo)
 	require.Equal(t, &session{region: "us-east-1"}, svc.Session)
 	require.Equal(t, &database{session: sess, tableName: "myTable"}, svc.Db)
 }

@@ -57,6 +57,32 @@ func (config *ConfigurationBuilder) Unmarshal(cfgStruct interface{}) error {
 			field := elem.Field(fi)
 			fieldType := field.Type()
 
+			// TODO
+			// trying to see if I can delegate to `GetService`
+			// here, instead of rewriting all the reflection logic.
+			//
+			// Couple of issues:
+			// - still need to reflect, in order to:
+			//    - check if the struct type is a string (skip)
+			//    - if it's a pointer, convert to val before sending to GetService
+			//    - If it's an interface... not quite sure how that works
+			// - GetService has bugs, where if the provided val is a pointer or a string
+			//   it returns the wrong service.
+			//
+			//name := elem.Type().Field(fi).Name
+			//_ = name
+			//
+			//fieldTypeName := fieldType.Elem().Name()
+			//_ = fieldTypeName
+			//
+			//impl = reflect.New(fieldType.Elem()).Interface()
+			//err := config.GetService(&impl)
+			//if err != nil {
+			//	println("Err")
+			//}
+
+			//continue
+
 			// See if we have a matching service type
 			for ti, t := range config.values.types {
 				if fieldType.Kind() == reflect.Interface && t.Implements(fieldType) {

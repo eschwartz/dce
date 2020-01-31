@@ -54,8 +54,11 @@ func (e *Service) AccountDelete(data *account.Account) error {
 }
 
 // AccountUpdate publish events
-func (e *Service) AccountUpdate(data *account.Account) error {
-	return e.publish(data, e.accountUpdate...)
+func (e *Service) AccountUpdate(oldAccount *account.Account, newAccount *account.Account) error {
+	return e.publish(map[string]*account.Account{
+		"oldAccount": oldAccount,
+		"newAccount": newAccount,
+	}, e.accountUpdate...)
 }
 
 // AccountReset publish events

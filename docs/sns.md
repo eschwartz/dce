@@ -64,25 +64,34 @@ This message includes a payload as JSON, with the following fields:
 
 | Field          | Type                             | Description                                                                                                 |
 | -------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| id             | string                           | AWS Account ID                                                                                              |
-| accountStatus  | "Ready", "NotReady", "Orphaned", or "Leased" | Account status                                                                                              |
-| adminRoleArn   | string                           | ARN for the IAM role used by the DCE master account to manage the account                                |
-| lastModifiedOn | int                              | Last modified timestamp                                                                                     |
-| createdOn      | int                              | Last modified timestamp                                                                                     |
-| metadata       | JSON object                      | Metadata field contains any organization specific data pertaining to the account that needs to be persisted |
+| oldAccount     | DCE Account Object               | The account, before it was modified  |
+| newAccount     | DCE Account Object               | The account, after it was modified   |
+
 
 Example:
 
 ```json
 {
-  "id": "1234567890",
-  "accountStatus": "NotReady",
-  "adminRoleArn": "arn:aws:iam::1234567890123:role/adminRole",
-  "principalRoleArn": "arn:aws:iam::1234567890123:role/DCEPrincipal",
-  "principalPolicyHash": "\"d41d8cd98f00b204e9800998ecf8427e-38\"",
-  "createdOn": 1560306008,
-  "lastModifiedOn": 1560306008,
-  "metadata": {}
+  "oldAccount": {
+      "id": "1234567890",
+      "accountStatus": "NotReady",
+      "adminRoleArn": "arn:aws:iam::1234567890123:role/adminRole",
+      "principalRoleArn": "arn:aws:iam::1234567890123:role/DCEPrincipal",
+      "principalPolicyHash": "\"d41d8cd98f00b204e9800998ecf8427e-38\"",
+      "createdOn": 1560306008,
+      "lastModifiedOn": 1560306008,
+      "metadata": {}
+  },
+  "newAccount": {
+      "id": "1234567890",
+      "accountStatus": "NotReady",
+      "adminRoleArn": "arn:aws:iam::1234567890123:role/adminRole",
+      "principalRoleArn": "arn:aws:iam::1234567890123:role/DCEPrincipal",
+      "principalPolicyHash": "\"d41d8cd98f00b204e9800998ecf8427e-38\"",
+      "createdOn": 1560306008,
+      "lastModifiedOn": 1560306008,
+      "metadata": {}
+  }
 }
 ```
 

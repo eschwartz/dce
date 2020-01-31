@@ -50,7 +50,7 @@ type ReaderWriterDeleter interface {
 type Eventer interface {
 	AccountCreate(account *Account) error
 	AccountDelete(account *Account) error
-	AccountUpdate(account *Account) error
+	AccountUpdate(oldAccount *Account, newACcount *Account) error
 	AccountReset(account *Account) error
 }
 
@@ -131,13 +131,15 @@ func (a *Service) Update(ID string, data *Account) (*Account, error) {
 		account.Metadata = data.Metadata
 	}
 
+	oldAccount := *account
+
 	err = a.Save(account)
 	if err != nil {
 		return nil, err
 	}
 
 	// Publish an "account-updated" event
-	err = a.eventSvc.AccountUpdate(account)
+	err = a.eventSvc.AccountUpdate(&oldAccount, account)
 	if err != nil {
 		return nil, err
 	}

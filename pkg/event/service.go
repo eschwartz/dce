@@ -15,10 +15,11 @@ type Publisher interface {
 type NewServiceInput struct {
 	SnsClient              snsiface.SNSAPI
 	SqsClient              sqsiface.SQSAPI
-	AccountCreatedTopicArn string `env:"ACCOUNT_CREATED_TOPIC_ARN" envDefault:"arn:aws:sns:us-east-1:123456789012:account-create"`
-	AccountDeletedTopicArn string `env:"ACCOUNT_DELETED_TOPIC_ARN" envDefault:"arn:aws:sns:us-east-1:123456789012:account-delete"`
-	AccountResetQueueURL   string `env:"RESET_SQS_URL" envDefault:"DefaultResetSQSUrl"`
-	LeaseAddedTopicArn     string `env:"LEASE_ADDED_TOPIC" envDefault:"arn:aws:sns:us-east-1:123456789012:lease-added"`
+	AccountCreatedTopicArn string `env:"ACCOUNT_CREATED_TOPIC_ARN"`
+	AccountUpdatedTopicArn string `env:"ACCOUNT_UPDATED_TOPIC_ARN"`
+	AccountDeletedTopicArn string `env:"ACCOUNT_DELETED_TOPIC_ARN"`
+	AccountResetQueueURL   string `env:"RESET_SQS_URL"`
+	LeaseAddedTopicArn     string `env:"LEASE_ADDED_TOPIC"`
 }
 
 // Service is the public interface for publishing events
@@ -89,6 +90,11 @@ func NewService(input NewServiceInput) (*Service, error) {
 		return nil, err
 	}
 
+	updateAccount, err := NewSnsEvent(input.SnsClient, input.AccountUpdatedTopicArn)
+	if err != nil {
+		return nil, err
+	}
+
 	resetAccount, err := NewSqsEvent(input.SqsClient, input.AccountResetQueueURL)
 	if err != nil {
 		return nil, err
@@ -107,7 +113,9 @@ func NewService(input NewServiceInput) (*Service, error) {
 	newEventer.accountDelete = []Publisher{
 		deleteAccount,
 	}
-	newEventer.accountUpdate = []Publisher{}
+	newEventer.accountUpdate = []Publisher{
+		updateAccount,
+	}
 
 	//////////////////////////////////////////////////////////////////////
 	// Lease Eventing

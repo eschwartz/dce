@@ -135,6 +135,13 @@ func (a *Service) Update(ID string, data *Account) (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Publish an "account-updated" event
+	err = a.eventSvc.AccountUpdate(account)
+	if err != nil {
+		return nil, err
+	}
+
 	return account, nil
 }
 

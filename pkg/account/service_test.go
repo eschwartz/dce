@@ -143,12 +143,13 @@ func TestUpdate(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		returnErr   error
-		amReturnErr error
-		origAccount account.Account
-		updAccount  account.Account
-		exp         response
+		name           string
+		dataSvcErr     error
+		amReturnErr    error
+		origAccount    account.Account
+		updAccount     account.Account
+		updateEventErr error
+		exp            response
 	}{
 		{
 			name: "should update",
@@ -178,7 +179,7 @@ func TestUpdate(t *testing.T) {
 				},
 				err: nil,
 			},
-			returnErr: nil,
+			dataSvcErr: nil,
 		},
 		{
 			name: "should fail validation on update",
@@ -193,7 +194,7 @@ func TestUpdate(t *testing.T) {
 				data: nil,
 				err:  errors.NewValidation("account", fmt.Errorf("id: must be a valid value.")), //nolint golint
 			},
-			returnErr: nil,
+			dataSvcErr: nil,
 		},
 		{
 			name: "should fail on save",
@@ -211,7 +212,29 @@ func TestUpdate(t *testing.T) {
 				data: nil,
 				err:  errors.NewInternalServer("failure", nil),
 			},
-			returnErr: errors.NewInternalServer("failure", fmt.Errorf("original failure")),
+			dataSvcErr: errors.NewInternalServer("failure", fmt.Errorf("original failure")),
+		},
+		{
+			name: "should fail on update event error",
+			origAccount: account.Account{
+				ID:             ptrString("123456789012"),
+				Status:         account.StatusReady.StatusPtr(),
+				AdminRoleArn:   arn.New("aws", "iam", "", "123456789012", "role/AdminRoleArn"),
+				CreatedOn:      &now,
+				LastModifiedOn: &now,
+			},
+			updAccount: account.Account{
+				AdminRoleArn: arn.New("aws", "iam", "", "123456789012", "role/AdminRoleArn"),
+				Metadata: map[string]interface{}{
+					"key": "value",
+				},
+			},
+			exp: response{
+				data: nil,
+				err:  errors.NewInternalServer("failure", nil),
+			},
+			updateEventErr: errors.NewInternalServer("failure", fmt.Errorf("original failure")),
+			dataSvcErr:     nil,
 		},
 	}
 
@@ -219,9 +242,11 @@ func TestUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mocksRwd := &mocks.ReaderWriterDeleter{}
 			mocksManager := &mocks.Manager{}
+			mocksEventer := &mocks.Eventer{}
 
-			mocksRwd.On("Get", *tt.origAccount.ID).Return(&tt.origAccount, tt.returnErr)
-			mocksRwd.On("Write", mock.AnythingOfType("*account.Account"), mock.AnythingOfType("*int64")).Return(tt.returnErr)
+			mocksRwd.On("Get", *tt.origAccount.ID).Return(&tt.origAccount, tt.dataSvcErr)
+			mocksRwd.On("Write", mock.AnythingOfType("*account.Account"), mock.AnythingOfType("*int64")).Return(tt.dataSvcErr)
+			mocksEventer.On("AccountUpdate", mock.AnythingOfType("*account.Account")).Return(tt.updateEventErr)
 
 			mocksManager.On("ValidateAccess", mock.AnythingOfType("*arn.ARN")).Return(tt.amReturnErr)
 
@@ -229,6 +254,7 @@ func TestUpdate(t *testing.T) {
 				account.NewServiceInput{
 					DataSvc:    mocksRwd,
 					ManagerSvc: mocksManager,
+					EventSvc:   mocksEventer,
 				},
 			)
 

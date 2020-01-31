@@ -90,6 +90,14 @@ output "account_created_topic_arn" {
   value = aws_sns_topic.account_created.arn
 }
 
+output "account_updated_topic_id" {
+  value = aws_sns_topic.account_updated.id
+}
+
+output "account_updated_topic_arn" {
+  value = aws_sns_topic.account_updated.arn
+}
+
 output "account_deleted_topic_id" {
   value = aws_sns_topic.account_deleted.id
 }

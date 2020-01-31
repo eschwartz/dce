@@ -22,6 +22,7 @@ module "accounts_lambda" {
     LEASE_DB                       = aws_dynamodb_table.leases.id
     RESET_SQS_URL                  = aws_sqs_queue.account_reset.id
     ACCOUNT_CREATED_TOPIC_ARN      = aws_sns_topic.account_created.arn
+    ACCOUNT_UPDATED_TOPIC_ARN      = aws_sns_topic.account_updated.arn
     ACCOUNT_DELETED_TOPIC_ARN      = aws_sns_topic.account_deleted.arn
     PRINCIPAL_ROLE_NAME            = local.principal_role_name
     PRINCIPAL_POLICY_NAME          = local.principal_policy_name
@@ -36,6 +37,11 @@ module "accounts_lambda" {
 
 resource "aws_sns_topic" "account_created" {
   name = "account-created-${var.namespace}"
+  tags = var.global_tags
+}
+
+resource "aws_sns_topic" "account_updated" {
+  name = "account-updated-${var.namespace}"
   tags = var.global_tags
 }
 

@@ -33,6 +33,11 @@ type Service struct {
 	leaseUpdate   []Publisher
 }
 
+type AccountUpdateEvent struct {
+	OldAccount *account.Account `json:"oldAccount"`
+	NewAccount *account.Account `json:"newAccount"`
+}
+
 func (e *Service) publish(i interface{}, p ...Publisher) error {
 	for _, n := range p {
 		err := n.Publish(i)
@@ -55,10 +60,7 @@ func (e *Service) AccountDelete(data *account.Account) error {
 
 // AccountUpdate publish events
 func (e *Service) AccountUpdate(oldAccount *account.Account, newAccount *account.Account) error {
-	return e.publish(map[string]*account.Account{
-		"oldAccount": oldAccount,
-		"newAccount": newAccount,
-	}, e.accountUpdate...)
+	return e.publish(AccountUpdateEvent{oldAccount, newAccount}, e.accountUpdate...)
 }
 
 // AccountReset publish events

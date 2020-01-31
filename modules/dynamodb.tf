@@ -157,3 +157,25 @@ resource "aws_dynamodb_table" "usage" {
 
   tags = var.global_tags
 }
+
+# System table
+# Tracks metadata about the DCE system
+# (eg, how many accounts exist of each status)
+resource "aws_dynamodb_table" "system" {
+  name  = "System${local.table_suffix}"
+  read_capacity    = 5
+  write_capacity   = 5
+  hash_key         = "Key"
+
+  server_side_encryption {
+    enabled = true
+  }
+
+  # Arbitrary lookup key
+  attribute {
+    name = "Key"
+    type = "S"
+  }
+
+  tags = var.global_tags
+}

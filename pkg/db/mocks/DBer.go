@@ -10,29 +10,6 @@ type DBer struct {
 	mock.Mock
 }
 
-// DeleteAccount provides a mock function with given fields: accountID
-func (_m *DBer) DeleteAccount(accountID string) (*db.Account, error) {
-	ret := _m.Called(accountID)
-
-	var r0 *db.Account
-	if rf, ok := ret.Get(0).(func(string) *db.Account); ok {
-		r0 = rf(accountID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*db.Account)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(accountID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FindAccountsByPrincipalID provides a mock function with given fields: principalID
 func (_m *DBer) FindAccountsByPrincipalID(principalID string) ([]*db.Account, error) {
 	ret := _m.Called(principalID)
@@ -171,27 +148,6 @@ func (_m *DBer) GetAccount(accountID string) (*db.Account, error) {
 	return r0, r1
 }
 
-// GetAccounts provides a mock function with given fields: input
-func (_m *DBer) GetAccounts(input db.GetAccountsInput) (db.GetAccountsOutput, error) {
-	ret := _m.Called(input)
-
-	var r0 db.GetAccountsOutput
-	if rf, ok := ret.Get(0).(func(db.GetAccountsInput) db.GetAccountsOutput); ok {
-		r0 = rf(input)
-	} else {
-		r0 = ret.Get(0).(db.GetAccountsOutput)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(db.GetAccountsInput) error); ok {
-		r1 = rf(input)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetLease provides a mock function with given fields: accountID, principalID
 func (_m *DBer) GetLease(accountID string, principalID string) (*db.Lease, error) {
 	ret := _m.Called(accountID, principalID)
@@ -252,52 +208,6 @@ func (_m *DBer) GetLeases(input db.GetLeasesInput) (db.GetLeasesOutput, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(db.GetLeasesInput) error); ok {
 		r1 = rf(input)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetReadyAccount provides a mock function with given fields:
-func (_m *DBer) GetReadyAccount() (*db.Account, error) {
-	ret := _m.Called()
-
-	var r0 *db.Account
-	if rf, ok := ret.Get(0).(func() *db.Account); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*db.Account)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// OrphanAccount provides a mock function with given fields: accountID
-func (_m *DBer) OrphanAccount(accountID string) (*db.Account, error) {
-	ret := _m.Called(accountID)
-
-	var r0 *db.Account
-	if rf, ok := ret.Get(0).(func(string) *db.Account); ok {
-		r0 = rf(accountID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*db.Account)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(accountID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -386,66 +296,6 @@ func (_m *DBer) TransitionLeaseStatus(accountID string, principalID string, prev
 	}
 
 	return r0, r1
-}
-
-// UpdateAccount provides a mock function with given fields: account, fieldsToUpdate
-func (_m *DBer) UpdateAccount(account db.Account, fieldsToUpdate []string) (*db.Account, error) {
-	ret := _m.Called(account, fieldsToUpdate)
-
-	var r0 *db.Account
-	if rf, ok := ret.Get(0).(func(db.Account, []string) *db.Account); ok {
-		r0 = rf(account, fieldsToUpdate)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*db.Account)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(db.Account, []string) error); ok {
-		r1 = rf(account, fieldsToUpdate)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// UpdateAccountPrincipalPolicyHash provides a mock function with given fields: accountID, prevHash, nextHash
-func (_m *DBer) UpdateAccountPrincipalPolicyHash(accountID string, prevHash string, nextHash string) (*db.Account, error) {
-	ret := _m.Called(accountID, prevHash, nextHash)
-
-	var r0 *db.Account
-	if rf, ok := ret.Get(0).(func(string, string, string) *db.Account); ok {
-		r0 = rf(accountID, prevHash, nextHash)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*db.Account)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, string, string) error); ok {
-		r1 = rf(accountID, prevHash, nextHash)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// UpdateMetadata provides a mock function with given fields: accountID, metadata
-func (_m *DBer) UpdateMetadata(accountID string, metadata map[string]interface{}) error {
-	ret := _m.Called(accountID, metadata)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, map[string]interface{}) error); ok {
-		r0 = rf(accountID, metadata)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
 
 // UpsertLease provides a mock function with given fields: lease

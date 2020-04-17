@@ -73,7 +73,9 @@ func handler(ctx context.Context, event events.DynamoDBEvent) error {
 	}
 
 	if len(deferredErrors) > 0 {
-		return errors2.NewMultiError("Failed to handle DynDB Event", deferredErrors)
+		multiError := errors2.NewMultiError("Failed to handle DynDB Event", deferredErrors)
+		log.Print(multiError.Error())
+		return multiError
 	}
 
 	return nil
@@ -105,6 +107,7 @@ func handleRecord(input *handleRecordInput) error {
 			log.Printf("lease id %s is over budget", *leaseID)
 			_, err := Services.LeaseService().Delete(*leaseID, lease.StatusReasonOverBudget)
 			if err != nil {
+				log.Printf("Failed to delete lease: %s", err)
 				return errors2.NewInternalServer(fmt.Sprintf("Failed to delete lease for leaseID %s", *leaseID), err)
 			}
 			log.Printf("ended lease id %s", *leaseID)

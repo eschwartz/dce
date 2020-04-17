@@ -34,7 +34,9 @@ type StatusError struct {
 	stack    *stack
 }
 
-func (e StatusError) Error() string { return e.Details.Message }
+func (e StatusError) Error() string {
+	return fmt.Sprintf("StatusError %d: %s. Cause: %s", e.httpCode, e.Details.Message, e.cause)
+}
 
 // OriginalError provides the underlying error
 func (e StatusError) OriginalError() error { return e.cause }

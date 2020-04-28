@@ -97,9 +97,3 @@ func (svc *SESEmailService) SendRawEmailWithAttachment(input *SendEmailWithAttac
 	return err
 }
 
-/*
-type BudgetNotificationer interface {
-	LeaseBudget(lease *lease.Lease, actualSpend float)
-	PrincipalBudget(principalID string, actualSpend float)
-}
-*/

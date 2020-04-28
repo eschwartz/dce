@@ -2,6 +2,7 @@ package lease
 
 import (
 	"fmt"
+	"github.com/Optum/dce/pkg/email"
 	"time"
 
 	"github.com/Optum/dce/pkg/account"
@@ -57,6 +58,7 @@ type Service struct {
 	dataSvc                  ReaderWriter
 	eventSvc                 Eventer
 	accountSvc               AccountServicer
+	emailSvc                 email.Service
 	defaultLeaseLengthInDays int
 	principalBudgetAmount    float64
 	principalBudgetPeriod    string
@@ -112,6 +114,26 @@ func (a *Service) Save(data *Lease) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// OverLeaseBudget deactivates the lease by ID,
+// and sends a notification to the principal user that they have
+// exceeded the budget on their lease
+func (a *Service) OverLeaseBudget(leaseID string) error {
+	// Deactivate the lease
+	_, err := a.Delete(leaseID, StatusReasonOverBudget)
+	if err != nil {
+		return errors.NewInternalServer(fmt.Sprintf("Failed to delete lease for leaseID %s", *leaseID), err)
+	}
+
+	return nil
+}
+
+// OverPrincipalBudget deactivates all active leases for the
+// give principal, and sends a notification to the principal user
+// that they have exceeded the budget for their period
+func (a *Service) OverPrincipalBudget(principalID string) error {
 	return nil
 }
 
@@ -305,6 +327,7 @@ type NewServiceInput struct {
 	DataSvc                  ReaderWriter
 	EventSvc                 Eventer
 	AccountSvc               AccountServicer
+	EmailSvc                 email.Service
 	DefaultLeaseLengthInDays int     `env:"DEFAULT_LEASE_LENGTH_IN_DAYS" envDefault:"7"`
 	PrincipalBudgetAmount    float64 `env:"PRINCIPAL_BUDGET_AMOUNT" envDefault:"1000.00"`
 	PrincipalBudgetPeriod    string  `env:"PRINCIPAL_BUDGET_PERIOD" envDefault:"Weekly"`
@@ -318,6 +341,7 @@ func NewService(input NewServiceInput) *Service {
 		dataSvc:                  input.DataSvc,
 		eventSvc:                 input.EventSvc,
 		accountSvc:               input.AccountSvc,
+		emailSvc:                 input.EmailSvc,
 		defaultLeaseLengthInDays: input.DefaultLeaseLengthInDays,
 		principalBudgetAmount:    input.PrincipalBudgetAmount,
 		principalBudgetPeriod:    input.PrincipalBudgetPeriod,

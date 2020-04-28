@@ -96,3 +96,9 @@ func (svc *SESEmailService) SendRawEmailWithAttachment(input *SendEmailWithAttac
 
 	return err
 }
+
+/*
+type BudgetNotificationer interface {
+
+}
+*/

@@ -280,16 +280,19 @@ func (a *Service) ListPages(query *Lease, fn func(*Leases) bool) error {
 
 	for {
 		records, err := a.dataSvc.List(query)
-		if err != nil {
+
+		// End pagination on error
+		if err != nil || records == nil {
 			return err
 		}
-		if records == nil || len(*records) == 0 {
+
+		// End pagination, if there are no more pages to query
+		if query.NextAccountID == nil || query.NextPrincipalID == nil {
 			break
 		}
+
+		// End pagination, if the pagination callback returns `false`
 		if !fn(records) {
-			break
-		}
-		if query.PrincipalID == nil {
 			break
 		}
 	}

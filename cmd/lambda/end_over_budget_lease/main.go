@@ -87,21 +87,36 @@ type handleRecordInput struct {
 
 func handleRecord(input *handleRecordInput) error {
 	record := input.record
+
+	// Only consider INSERT / MODIFY records
 	if record.EventName != "INSERT" && record.EventName != "MODIFY" {
 		return nil
 	}
 
 	sortKey := record.Change.NewImage["SK"].String()
-	leaseSummaryRegex := regexp.MustCompile((data.UsageLeaseSkSummaryPrefix) + `[-\w]+`)
-	principalRegex := regexp.MustCompile(data.UsagePrincipalSkPrefix + `[-\w]+`)
+
+	// Principal usage records have a sort key like
+	// Usage-Principal-<PrincipalID>-<BudgetPeriodStartDate>
+	isPrincipalUsageRecord := regexp.
+		MustCompile(data.UsagePrincipalSkPrefix + `[-\w]+`).
+		MatchString(sortKey)
+
+	// "Lease Summary" usage record have a sort key like
+	// Usage-Lease-Summary-<leaseID>
+	isLeaseUsageRecord := regexp.
+		MustCompile((data.UsageLeaseSkSummaryPrefix) + `[-\w]+`).
+		MatchString(sortKey)
+
 	switch {
-	case leaseSummaryRegex.MatchString(sortKey):
+	case isLeaseUsageRecord:
+		// Unmarshal the DB stream event into a usage.Lease struct
 		leaseUsageSummary := usage.Lease{}
 		err := UnmarshalStreamImage(record.Change.NewImage, &leaseUsageSummary)
 		if err != nil {
 			return errors2.NewInternalServer("Failed to unmarshal stream image", err)
 		}
 
+		// End the lease if its over budget
 		if isLeaseOverBudget(&leaseUsageSummary) {
 			leaseID := leaseUsageSummary.LeaseID
 			log.Printf("lease id %s is over budget", *leaseID)
@@ -111,21 +126,26 @@ func handleRecord(input *handleRecordInput) error {
 			}
 			log.Printf("ended lease id %s", *leaseID)
 		}
-	case principalRegex.MatchString(sortKey):
+
+	case isPrincipalUsageRecord:
+		// Unmarshal the DB stream event into a usage.Principal struct
 		principalSummary := usage.Principal{}
 		err := UnmarshalStreamImage(record.Change.NewImage, &principalSummary)
 		if err != nil {
 			return errors2.NewInternalServer("Failed to unmarshal stream image", err)
 		}
 
+
+		// If the principal is over budget
+		// end all active lease for the principal
 		if isPrincipalOverBudget(&principalSummary) {
 			log.Printf("principal id %s is over budget", *principalSummary.PrincipalID)
 			query := lease.Lease{
 				PrincipalID: principalSummary.PrincipalID,
 				Status:      lease.StatusActive.StatusPtr(),
 			}
-			deferredErrors := []error{}
-			deleteLeases := func(leases *lease.Leases) bool {
+			var deferredErrors []error
+			err := Services.LeaseService().ListPages(&query, func(leases *lease.Leases) bool {
 				for _, _lease := range *leases {
 					_, err := Services.LeaseService().Delete(*_lease.ID, lease.StatusReasonOverPrincipalBudget)
 					if err != nil {
@@ -134,8 +154,7 @@ func handleRecord(input *handleRecordInput) error {
 					log.Printf("ended lease id %s because principal id %s is over budget", *_lease.ID, *principalSummary.PrincipalID)
 				}
 				return true
-			}
-			err := Services.LeaseService().ListPages(&query, deleteLeases)
+			})
 			if err != nil {
 				return errors2.NewInternalServer(fmt.Sprintf("Failed to delete one or more leases for principalID %s", *principalSummary.PrincipalID), err)
 			}

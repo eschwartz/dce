@@ -74,12 +74,12 @@ func handler(ctx context.Context, event lease.Lease) (eventOut, error) {
 		leaseEndDate = *updLease.ExpiresOn
 	}
 
-	usageEndDate := leaseEndDate + usageContinuation - time.Now().Unix()
+	usageTTL := leaseEndDate + usageContinuation - time.Now().Unix()
 	leaseTTL := leaseEndDate - time.Now().Unix()
 	return eventOut{
 		updLease,
 		leaseTTL,
-		usageEndDate,
+		usageTTL,
 	}, nil
 }
 
